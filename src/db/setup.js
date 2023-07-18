@@ -1,6 +1,8 @@
 const pool = require('./connection');
 
 const setup = async () => {
+
+
   await pool.query(`
     CREATE TABLE users (
       id UUID PRIMARY KEY,

@@ -1,6 +1,7 @@
 const pool = require('../db/connection');
 
 const createUser = async (user) => {
+  try {
     const { id, full_name, address, lat, long, email, username, password } = user;
     const query = `
         INSERT INTO users (id, full_name, address, lat, long, email, username, password) 
@@ -8,11 +9,13 @@ const createUser = async (user) => {
         RETURNING *;
     `;
     const values = [id, full_name, address, lat, long, email, username, password];
-
     const { rows } = await pool.query(query, values);
     return rows[0];
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
 };
-
 
 const getUserByEmail = async (email) => {
   try {
@@ -74,17 +77,31 @@ const changePassword = async (userId, hashedPassword) => {
   }
 };
 
-
 const getUserById = async (id) => {
-  const query = {
-    text: 'SELECT * FROM users WHERE id = $1',
-    values: [id],
-  };
+  try {
+    const query = {
+      text: 'SELECT * FROM users WHERE id = $1',
+      values: [id],
+    };
 
-  const result = await pool.query(query);
-  return result.rows[0];
+    const result = await pool.query(query);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error retrieving user by ID:', error);
+    throw error;
+  }
 };
 
+const deleteUser = async (userId, client = pool) => {
+  const query = 'DELETE FROM users WHERE id = $1';
+  try {
+    const result = await client.query(query, [userId]);
+    return result;
+  } catch (error) {
+    console.error('Error deleting user', error.stack);
+    throw error;
+  }
+};
 
 module.exports = {
     createUser,
@@ -92,5 +109,6 @@ module.exports = {
     updateSessionToken,
     invalidateOldSessions,
     changePassword,
+    deleteUser,
     getUserById,
 };

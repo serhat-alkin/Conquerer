@@ -1,8 +1,10 @@
 
 const usersService = require('../services/usersService');
+const postsService = require('../services/postsService');
+const commentsService = require('../services/commentsService');
 const { userRegistrationSchema, changePasswordSchema, loginSchema } = require('../schemas/validationSchemas');
 const { generateJWT, hashPassword } = require("../utils/crypto");
-
+const pool = require('../db/connection');
 
 const register = async (req, res) => {
   try {
@@ -11,8 +13,10 @@ const register = async (req, res) => {
       res.status(400).json({ error: validation.error.details[0].message });
       return;
     }
+
     const hashedPassword = await hashPassword(req.body.password);
     const newUser = await usersService.createUser(req.body, hashedPassword);
+
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ error: error.toString() });
@@ -26,12 +30,14 @@ const login = async (req, res) => {
       res.status(400).json({ error: validation.error.details[0].message });
       return;
     }
+
     const user = await usersService.getUser(req.body);
     if(!user){
       return res.status(401).json({
         error: "User not found with given email",
       });
     }
+
     const isValidPassword = await usersService.isValidPassword(req.body.password, user.password);
     if(!isValidPassword){
       return res.status(400).json({
@@ -46,7 +52,6 @@ const login = async (req, res) => {
       message: "Login successful!",
       token,
     });
-    
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -58,6 +63,7 @@ const changePassword = async (req, res) => {
     if (validation.error) {
         throw new Error(validation.error);
     }
+
     const { user_id, old_password, new_password } = req.body;
     const user = await usersService.getUserById(user_id);
     if (!user) {
@@ -70,6 +76,7 @@ const changePassword = async (req, res) => {
         error: "Current password is incorrect",
       });
     }
+
     const hashedPassword = await hashPassword(new_password);
     await usersService.changePassword(user_id, hashedPassword);
     await usersService.invalidateOldSessions(user_id);
@@ -81,9 +88,33 @@ const changePassword = async (req, res) => {
 };
 
 
+const deleteUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { userId } = req.params;
+
+    await client.query('BEGIN');
+
+    await commentsService.deleteComments(userId, client);
+    await postsService.deletePosts(userId, client);
+    await usersService.deleteUser(userId, client);
+
+    await client.query('COMMIT');
+
+    return res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    return res.status(500).json({ message: 'An error occurred', error: error.message });
+  } finally {
+    client.release();
+  }
+};
+
+
 module.exports = {
   register,
   login,
   changePassword,
+  deleteUser,
 };
 

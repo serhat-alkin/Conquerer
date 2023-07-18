@@ -48,6 +48,10 @@ const getUserById = async (id) => {
   return await usersDao.getUserById(id);
 };
 
+const deleteUser = async (userId, client) => {
+  await usersDao.deleteUser(userId, client);
+};
+
 module.exports = {
   createUser,
   getUser,
@@ -56,4 +60,5 @@ module.exports = {
   invalidateOldSessions,
   changePassword,
   getUserById,
+  deleteUser,
 };
