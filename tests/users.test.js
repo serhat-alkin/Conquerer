@@ -140,7 +140,7 @@ describe('usersController', () => {
       };
 
       const req = httpMocks.createRequest({
-        method: 'POST',
+        method: 'GET',
         url: '/users/login',
         body: user
       });
@@ -164,7 +164,7 @@ describe('usersController', () => {
       };
 
       const req = httpMocks.createRequest({
-        method: 'POST',
+        method: 'GET',
         url: '/users/login',
         body: user
       });

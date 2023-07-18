@@ -18,7 +18,7 @@ describe('postsController', () => {
 
       const req = httpMocks.createRequest({
         method: 'POST',
-        url: '/post/create',
+        url: '/posts/create',
         body: post
       });
 
@@ -42,7 +42,7 @@ describe('postsController', () => {
 
       const req = httpMocks.createRequest({
         method: 'POST',
-        url: '/post/create',
+        url: '/posts/create',
         body: post
       });
 
@@ -67,8 +67,8 @@ describe('postsController', () => {
       };
 
       const req = httpMocks.createRequest({
-        method: 'PUT',
-        url: '/post/update',
+        method: 'PATCH',
+        url: '/posts/update',
         params: { postId: "existing-id" },
         body: post
       });
@@ -89,8 +89,8 @@ describe('postsController', () => {
   describe('deleteBlogPost', () => {
     it('should delete a blog post and return 200 status', async () => {
       const req = httpMocks.createRequest({
-        method: 'DELETE',
-        url: '/blog/delete',
+        method: 'PATCH',
+        url: '/posts/delete/existing-id',
         params: { postId: "existing-id" }
       });
 
