@@ -2,7 +2,10 @@ const pool = require('./connection');
 
 const setup = async () => {
 
-
+  await pool.query('DROP TABLE IF EXISTS comments;');
+  await pool.query('DROP TABLE IF EXISTS posts;');
+  await pool.query('DROP TABLE IF EXISTS users;');
+  
   await pool.query(`
     CREATE TABLE users (
       id UUID PRIMARY KEY,
