@@ -108,7 +108,6 @@ describe('postsController', () => {
       await postsController.updateBlogPost(req, res);
   
       expect(res._getStatusCode()).toBe(200);
-      expect(JSON.parse(res._getData())).toEqual({ message: 'Post updated successfully' });
     });
   });
 

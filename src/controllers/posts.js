@@ -48,7 +48,7 @@ const updateBlogPost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    return res.status(200).json({ message: 'Post updated successfully' });
+    return res.status(200).json({ data: updatedPost });
   } catch (error) {
     return res.status(500).json({ message: 'An error occurred', error: error.message });
   }
