@@ -32,30 +32,32 @@ Execute `npm start` to run the application. Server is going to start running at 
 
 Execute `npm test` to run tests. <br />
 
+Here's the updated table with the related parameter variable names added in the `Param Needed` column:
 
-| Method   | Endpoint                            | Description                           |
-| -------- | ----------------------------------- | ------------------------------------- |
-| `POST`   | `/users/register`                   | Register a new user                    |
-| `POST`   | `/users/login`                      | User login                            |
-| `POST`   | `/users/:userId/changePassword`     | Change user password                  |
-| `DELETE` | `/users/:userId`                    | Delete user                           |
-| `POST`   | `/posts/create`                     | Create a new blog post                 |
-| `PATCH`  | `/posts/update/:postId`             | Update a blog post                     |
-| `PATCH`  | `/posts/delete/:postId`             | Soft Delete a blog post                     |
-| `POST`   | `/comments/create/`                 | Create a new comment                   |
-| `GET`    | `/users/:userId/comments`           | Get comments by user ID                |
-| `GET`    | `/users/:userId/posts`              | Get posts by user ID                   |
-| `GET`    | `/posts`                            | Get last posts                         |
-| `GET`    | `/posts/by_category`                | Get posts by category                  |
-| `GET`    | `/search/category_rates`            | Get category rates                     |
-| `GET`    | `/search/user_stats`                | Get user statistics                    |
-| `GET`    | `/search/posts/this_week`           | Get posts from this week               |
-| `GET`    | `/search/posts/this_month`          | Get posts from this month              |
-| `GET`    | `/search/posts/this_year`           | Get posts from this year               |
+| Method   | Endpoint                            | Description                           | Token Needed | Param Needed        |
+| -------- | ----------------------------------- | ------------------------------------- | ------------ | ------------------- |
+| `POST`   | `/users/register`                   | Register a new user                    | No           | No                  |
+| `POST`   | `/users/login`                      | User login                            | No           | No                  |
+| `POST`   | `/users/:userId/changePassword`     | Change user password                  | Yes          | `userId`            |
+| `DELETE` | `/users/:userId`                    | Delete user                           | Yes          | `userId`            |
+| `POST`   | `/posts/create`                     | Create a new blog post                 | Yes          | No                  |
+| `PATCH`  | `/posts/update/:postId`             | Update a blog post                     | Yes          | `postId`            |
+| `PATCH`  | `/posts/delete/:postId`             | Soft Delete a blog post                | Yes          | `postId`            |
+| `POST`   | `/comments/create/`                 | Create a new comment                   | Yes          | No                  |
+| `GET`    | `/users/:userId/comments`           | Get comments by user ID                | Yes          | `userId`            |
+| `GET`    | `/users/:userId/posts`              | Get posts by user ID                   | Yes          | `userId`            |
+| `GET`    | `/posts`                            | Get last posts                         | Yes          | No                  |
+| `GET`    | `/posts/by_category`                | Get posts by category                  | Yes          | No                  |
+| `GET`    | `/search/category_rates`            | Get category rates                     | Yes          | No                  |
+| `GET`    | `/search/user_stats`                | Get user statistics                    | Yes          | No                  |
+| `GET`    | `/search/posts/this_week`           | Get posts from this week               | Yes          | No                  |
+| `GET`    | `/search/posts/this_month`          | Get posts from this month              | Yes          | No                  |
+| `GET`    | `/search/posts/this_year`           | Get posts from this year               | Yes          | No                  |
+
 
 The last 5 GET requests in the table above belong to Part 2 of the project (Elastic search).
 
-Please note that the JWT token received upon login must be included in the Authorization header of all subsequent requests.
+Please note that the JWT token received upon login must be included in the Authorization header of all subsequent requests as stated in "Token Needed" column. Also "Param Needed" column specifies any additional parameters that are required for the request. 
 
 
 You can check this [postman collection](https://drive.google.com/file/d/15B8PFmctI3yRvspfHyRSQ6ZfYqpM3OcB/view?usp=sharing) and see sample requests for each enpoint.
