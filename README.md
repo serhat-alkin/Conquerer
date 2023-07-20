@@ -26,7 +26,7 @@ ELASTIC_SEARCH_API_KEY=API_KEY
 
 Execute `npm install` to install dependencies. <br />
 
-Execute `npm setup`  to setup and initialize db. <br />
+Execute `npm run setup`  to setup and initialize db. It may take a a while to init db. Please wait until seeing both Tables cread and Data created log. <br />
 
 Execute `npm start` to run the application. Server is going to start running at http://localhost:3000. <br />
 

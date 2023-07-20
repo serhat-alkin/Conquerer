@@ -35,6 +35,7 @@ const populateDatabase = async () => {
     comments.push(`('${uuidv4()}', '${userIds[i]}', '${postIds[i]}', 'Comment Text ${i+1}')`);
   }
   await pool.query(`INSERT INTO comments (id, user_id, post_id, body) VALUES ${comments.join(", ")}`);
+  console.log('Data created.');
 };
 
 populateDatabase();
