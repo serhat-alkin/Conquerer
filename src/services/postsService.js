@@ -18,9 +18,14 @@ const softDeletePost = async (postId, client) => {
   return await postsDao.softDeletePost(postId, client);
 };
 
+const getPostById = async (postId) => {
+  return await postsDao.getPostById(postId);
+};
+
 module.exports = {
   deletePosts,
   createBlogPost,
   updatePost,
   softDeletePost,
+  getPostById,
 };

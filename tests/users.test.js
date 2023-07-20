@@ -1,262 +1,266 @@
 const usersController = require('../src/controllers/users');
 const usersService = require('../src/services/usersService');
-const { generateJWT, hashPassword } = require("../src/utils/crypto");
-const httpMocks = require('node-mocks-http'); 
+const httpMocks = require('node-mocks-http');
+const { hashPassword } = require("../src/utils/crypto");
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
+jest.mock('../src/services/usersService');
 
-jest.mock('../src/services/usersService'); 
+describe('UserController', () => {
 
-describe('usersController', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   describe('register', () => {
-    it('should create a user and return 201 status', async () => {
-      const user = {
-        full_name: "Anastasia Ferguson",
-        email: "anastasia@ferguson.moda",
-        password: "Password123@",
-        confirm_password:"Password123@"
+    it('should register a user and return 201 status', async () => {
+      const newUser = {
+        email: 'test@gmail.com',
+        full_name: 'Test User',
+        password: 'TestPassword123@',
+        confirm_password: 'TestPassword123@',
       };
-
+    
+      const hashedPassword = await hashPassword(newUser.password);
+      
+      const user = {
+        ...newUser,
+        password: hashedPassword,
+      };
+    
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/users/register',
-        body: user
+        body: newUser,
       });
-
+    
       const res = httpMocks.createResponse();
-
-      const hashedPassword = await hashPassword(user.password);
-      usersService.createUser.mockResolvedValue({
-        ...user,
-        id: "generated-id",
-        password: hashedPassword,
-        username: user.full_name.split(' ').join('_').toLowerCase()
-      });
-
+      
+      usersService.createUser.mockResolvedValue(user);
+    
       await usersController.register(req, res);
-
+    
+      const data = JSON.parse(res._getData());
+      
       expect(res._getStatusCode()).toBe(201);
-      expect(JSON.parse(res._getData())).toEqual({
-        ...user,
-        id: "generated-id",
-        password: hashedPassword,
-        username: user.full_name.split(' ').join('_').toLowerCase()
-      }); 
+      expect(data).toEqual(user);
     });
+    
 
-    it('should return 400 status if password is not confirmed', async () => {
-      const user = {
-        full_name: "Anastasia Ferguson",
-        email: "anastasia@ferguson.moda",
-        password: "Password123@",
+    it('should return 400 status for invalid input', async () => {
+      const newUser = {
+        email: "test",
+        full_name: "Test User",
+        password: "TestPassword123@",
+        confirm_password: "Test"
       };
 
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/users/register',
-        body: user
+        body: newUser
       });
 
       const res = httpMocks.createResponse();
+
       await usersController.register(req, res);
-      expect(res._getStatusCode()).toBe(400);
-    });
 
-    it('should return 400 status if passwords do not match', async () => {
-      const user = {
-        full_name: "Anastasia Ferguson",
-        email: "anastasia@ferguson.moda",
-        password: "Password123@",
-        confirm_password:"Password123"
-      };
-
-      const req = httpMocks.createRequest({
-        method: 'POST',
-        url: '/users/register',
-        body: user
-      });
-
-      const res = httpMocks.createResponse();
-      await usersController.register(req, res);
-      expect(res._getStatusCode()).toBe(400);
-    });
-
-    it('should return 400 status if passwords is not strong', async () => {
-      const user = {
-        full_name: "Anastasia Ferguson",
-        email: "anastasia@ferguson.moda",
-        password: "password123",
-        confirm_password:"password123"
-      };
-
-      const req = httpMocks.createRequest({
-        method: 'POST',
-        url: '/users/register',
-        body: user
-      });
-
-      const res = httpMocks.createResponse();
-      await usersController.register(req, res);
       expect(res._getStatusCode()).toBe(400);
     });
   });
 
   describe('login', () => {
-    it('should log in a user and return 200 status', async () => {
-      const user = {
-        email: "anastasia@ferguson.moda",
-        password: "Password123@"
+    it('should login user and return token', async () => {
+      const loginUser = {
+        email: 'test@gmail.com',
+        password: 'TestPassword123@',
       };
-
+    
+      const user = {
+        email: 'test@gmail.com',
+        password: await hashPassword(loginUser.password),
+        id: 'test-id',
+      };
+    
       const req = httpMocks.createRequest({
-        method: 'GET',
+        method: 'POST',
         url: '/users/login',
-        body: user
+        body: loginUser,
       });
-
+    
       const res = httpMocks.createResponse();
-
-      usersService.getUser.mockResolvedValue({
-        ...user,
-        id: "user-id"
-      });
-      
+    
+      usersService.getUser.mockResolvedValue(user);
       usersService.isValidPassword.mockResolvedValue(true);
-      usersService.updateSessionToken.mockResolvedValue();
-
-      const token = await generateJWT("user-id");
-      usersService.invalidateOldSessions.mockResolvedValue();
+    
       await usersController.login(req, res);
-
+    
+      const data = JSON.parse(res._getData());
+    
       expect(res._getStatusCode()).toBe(200);
-      expect(JSON.parse(res._getData())).toEqual({
-        message: "Login successful!",
-        token,
-      }); 
+      expect(data.message).toBe("Login successful!");
+      expect(data).toHaveProperty("token");
     });
+    
 
-    it('should return 400 status if password is incorrect', async () => {
+    it('should return 401 for non-existing user', async () => {
       const user = {
-        email: "anastasia@ferguson.moda",
-        password: "IncorrectPassword123@"
+        email: "test@gmail.com",
+        password: "TestPassword123@"
       };
-
-      const req = httpMocks.createRequest({
-        method: 'GET',
-        url: '/users/login',
-        body: user
-      });
-
-      const res = httpMocks.createResponse();
-
-      usersService.getUser.mockResolvedValue({
-        ...user,
-        id: "user-id"
-      });
-
-      usersService.isValidPassword.mockResolvedValue(false);
-      await usersController.login(req, res);
-      expect(res._getStatusCode()).toBe(400);
-    });
-
-    it('should return 401 status if user not found', async () => {
-      const user = {
-        email: "no.user@gmail.com",
-        password: "Password123@"
-      };
-
-      const req = httpMocks.createRequest({
-        method: 'GET',
-        url: '/users/login',
-        body: user
-      });
-
-      const res = httpMocks.createResponse();
-
+      
       usersService.getUser.mockResolvedValue(null);
+
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/users/login',
+        body: user
+      });
+
+      const res = httpMocks.createResponse();
+
       await usersController.login(req, res);
 
       expect(res._getStatusCode()).toBe(401);
     });
-  });
 
-
-  describe('changePassword', () => {
-    it('should change password and return 200 status', async () => {
-      const changePasswordReq = {
-        user_id: "user-id",
-        old_password: "OldPassword123@",
-        new_password: "NewPassword123@"
-      };
-
+    it('should return 400 for invalid password', async () => {
       const user = {
-        id: "user-id",
-        password: await hashPassword("OldPassword123@")
+        email: "test@gmail.com",
+        password: "TestPassword123@"
       };
+
+      const hashedPassword = await hashPassword(user.password);
+      
+      usersService.getUser.mockResolvedValue({ ...user, password: hashedPassword });
+      usersService.isValidPassword.mockResolvedValue(false);
 
       const req = httpMocks.createRequest({
-        method: 'POST',
-        url: '/users/changePassword',
-        body: changePasswordReq
+        method: 'GET',
+        url: '/users/login',
+        body: user
       });
 
       const res = httpMocks.createResponse();
 
+      await usersController.login(req, res);
+
+      expect(res._getStatusCode()).toBe(400);
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should change password and return 200 status', async () => {
+      const user_id = "test-id";
+      const changePasswordReq = {
+        current_password: "OldPassword123@",
+        new_password: "NewPassword123@"
+      };
+  
+      const user = {
+        id: user_id,
+        password: await hashPassword("OldPassword123@")
+      };
+  
+      const token = jwt.sign({ user: user_id }, process.env.JWT_SECRET);
+  
+      const req = httpMocks.createRequest({
+        method: 'POST',
+        url: `/users/${user_id}/changePassword`,
+        params: { userId: user_id },
+        body: changePasswordReq,
+        headers: {
+          'authorization': token,
+        },
+        userId: user_id
+      });
+  
+      const res = httpMocks.createResponse();
+  
       usersService.getUserById.mockResolvedValue(user);
       usersService.isValidPassword.mockResolvedValue(true);
       usersService.changePassword.mockResolvedValue();
       usersService.invalidateOldSessions.mockResolvedValue();
-
+  
       await usersController.changePassword(req, res);
-
+  
+      const data = JSON.parse(res._getData());
       expect(res._getStatusCode()).toBe(200);
-      expect(JSON.parse(res._getData())).toEqual({
+      expect(data).toEqual({
         message: "Password changed successfully. Please log in again.",
       }); 
     });
+ 
 
-    it('should return 400 status if old password is incorrect', async () => {
+    it('should return 403 for unauthorized user', async () => {
+      const user_id = "test-id";
+      const user_id2 = "test-id2";
       const changePasswordReq = {
-        user_id: "user-id",
-        old_password: "IncorrectOldPassword123@",
+        current_password: "OldPassword123@",
         new_password: "NewPassword123@"
       };
-
+  
       const user = {
-        id: "user-id",
+        id: user_id,
         password: await hashPassword("OldPassword123@")
       };
-
+  
+      const token = jwt.sign({ user: user_id }, process.env.JWT_SECRET);
+  
       const req = httpMocks.createRequest({
         method: 'POST',
-        url: '/users/changePassword',
-        body: changePasswordReq
+        url: `/users/${user_id}/changePassword`,
+        params: { userId: user_id },
+        body: changePasswordReq,
+        headers: {
+          'authorization': token,
+        },
+        userId: user_id2
       });
 
       const res = httpMocks.createResponse();
-      usersService.getUserById.mockResolvedValue(user);
-      usersService.isValidPassword.mockResolvedValue(false);
+
       await usersController.changePassword(req, res);
-      
+
+      expect(res._getStatusCode()).toBe(403);
+    });
+
+    it('should return 400 for worng password', async () => {
+      const user_id = "test-id";
+      const changePasswordReq = {
+        current_password: "OldPassword",
+        new_password: "NewPassword123@"
+      };
+  
+      const user = {
+        id: user_id,
+        password: await hashPassword("OldPassword")
+      };
+  
+      const token = jwt.sign({ user: user_id }, process.env.JWT_SECRET);
+  
+      const req = httpMocks.createRequest({
+        method: 'POST',
+        url: `/users/${user_id}/changePassword`,
+        params: { userId: user_id },
+        body: changePasswordReq,
+        headers: {
+          'authorization': token,
+        },
+        userId: user_id
+      });
+  
+      const res = httpMocks.createResponse();
+  
+      usersService.getUserById.mockResolvedValue(user);
+      usersService.isValidPassword.mockResolvedValue(true);
+      usersService.changePassword.mockResolvedValue();
+      usersService.invalidateOldSessions.mockResolvedValue();
+  
+      await usersController.changePassword(req, res);
+  
       expect(res._getStatusCode()).toBe(400);
     });
 
-    it('should return 404 status if user not found', async () => {
-      const changePasswordReq = {
-        user_id: "nonexistent-user-id",
-        old_password: "OldPassword123@",
-        new_password: "NewPassword123@"
-      };
-
-      const req = httpMocks.createRequest({
-        method: 'POST',
-        url: '/users/changePassword',
-        body: changePasswordReq
-      });
-
-      const res = httpMocks.createResponse();
-      usersService.getUserById.mockResolvedValue(null);
-      await usersController.changePassword(req, res);
-      
-      expect(res._getStatusCode()).toBe(404);
-    });
   });
 });

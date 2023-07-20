@@ -5,12 +5,13 @@ const pool = require('../db/connection');
 
 const createBlogPost = async (req, res) => {
   try {
+
     const validation = createPostSchema.validate(req.body);
     if (validation.error) {
       res.status(400).json({ error: validation.error.details[0].message });
       return;
     }
-
+    req.body.user_id = req.userId;
     const blogPost = await postsService.createBlogPost(req.body);
     res.status(200).json(blogPost);
 
@@ -35,6 +36,13 @@ const updateBlogPost = async (req, res) => {
 
     const { postId } = req.params;
     const { title, body } = req.body;
+    
+    const userId = req.userId;
+    const post = await postsService.getPostById(postId);
+    if (!post || post.user_id !== userId) {
+      return res.status(403).json({ message: 'You are not authorized to update this post' });
+    }
+
     const updatedPost = await postsService.updatePost(postId, title, body);
     if (!updatedPost) {
       return res.status(404).json({ message: 'Post not found' });
@@ -45,6 +53,7 @@ const updateBlogPost = async (req, res) => {
     return res.status(500).json({ message: 'An error occurred', error: error.message });
   }
 };
+
 
 const deleteBlogPost = async (req, res) => {
   let client;
@@ -58,6 +67,14 @@ const deleteBlogPost = async (req, res) => {
 
     await client.query('BEGIN');
     const { postId } = req.params;
+
+    const userId = req.userId;
+    const post = await postsService.getPostById(postId);
+    if (!post || post.user_id !== userId) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ message: 'You are not authorized to delete this post' });
+    }
+
     await commentsService.softDeleteComments(postId, client); 
     const deleted = await postsService.softDeletePost(postId, client);
     
@@ -75,6 +92,7 @@ const deleteBlogPost = async (req, res) => {
     client?.release();
   }
 };
+
 
 module.exports = {
   createBlogPost,

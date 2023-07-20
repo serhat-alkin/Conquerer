@@ -1,8 +1,7 @@
 const Joi = require('joi');
 
 const changePasswordSchema = Joi.object({
-    user_id: Joi.string().required(),
-    old_password: Joi.string()
+    current_password: Joi.string()
     .pattern(/^(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/),
     new_password: Joi.string()
     .pattern(/^(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
@@ -23,18 +22,15 @@ const loginSchema = Joi.object({
 });
 
 const createPostSchema = Joi.object({
-  user_id: Joi.string().required(),
   title: Joi.string().required(),
   body: Joi.string().required(),
   category: Joi.string().valid('Artificial Intelligence', 'Business', 'Money', 'Technology').required(),
 });
 
 const createCommentSchema = Joi.object({
-  user_id: Joi.string().required(),
   post_id: Joi.string().required(),
   body: Joi.string().required(),
 });
-
 
 const updatePostSchema = Joi.object({
   title: Joi.string().min(1).required(),

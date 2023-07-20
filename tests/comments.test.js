@@ -1,22 +1,32 @@
 const commentsController = require('../src/controllers/comments');
 const commentsService = require('../src/services/commentsService');
 const httpMocks = require('node-mocks-http');
-
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
 jest.mock('../src/services/commentsService');
 
 describe('commentsController', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const userId = "test-id";
   describe('createComment', () => {
     it('should create a comment and return 200 status', async () => {
       const comment = {
         post_id: 'post-1',
-        user_id: 'user-1',
         body: "This is a comment.",
       };
 
+      const token = jwt.sign({ user: userId }, process.env.JWT_SECRET);
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/comments/create',
-        body: comment
+        body: comment,
+        headers: {
+          'authorization': token,
+        },
+        userId
       });
 
       const res = httpMocks.createResponse();
@@ -32,14 +42,18 @@ describe('commentsController', () => {
     it('should return 400 status when invalid post id data is provided', async () => {
       const comment = {
         post_id: '',
-        user_id: 'user-1',
         body: "This is a comment.",
       };
 
+      const token = jwt.sign({ user: userId }, process.env.JWT_SECRET);
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/comments/create',
-        body: comment
+        body: comment,
+        headers: {
+          'authorization': token,
+        },
+        userId
       });
 
       const res = httpMocks.createResponse();
@@ -49,6 +63,5 @@ describe('commentsController', () => {
       expect(res._getStatusCode()).toBe(400);
      
     });
-    
   });
 });

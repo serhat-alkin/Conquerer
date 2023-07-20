@@ -119,6 +119,21 @@ const getPostsByCategory = async (category) => {
 };
 
 
+const getPostById = async (id) => {
+  try {
+    const query = {
+      text: 'SELECT * FROM posts WHERE id = $1',
+      values: [id],
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error retrieving post by ID:', error);
+    throw error;
+  }
+};
+
 
 module.exports = {
   deletePosts,
@@ -128,4 +143,5 @@ module.exports = {
   getPostsByUserId,
   getLastPosts,
   getPostsByCategory,
+  getPostById,
 };

@@ -30,7 +30,7 @@ const login = async (req, res) => {
       res.status(400).json({ error: validation.error.details[0].message });
       return;
     }
-
+   
     const user = await usersService.getUser(req.body);
     if(!user){
       return res.status(401).json({
@@ -48,6 +48,9 @@ const login = async (req, res) => {
     const token = await generateJWT(user.id);
     await usersService.invalidateOldSessions(user.id);
     await usersService.updateSessionToken(token, user.id);
+
+    res.cookie('token', token, { httpOnly: true });
+    
     res.json({
       message: "Login successful!",
       token,
@@ -59,18 +62,31 @@ const login = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
-    const validation = changePasswordSchema.validate(req.body);
-    if (validation.error) {
-        throw new Error(validation.error);
+    const paramValidation = userIdSchema.validate(req.params);
+    if (paramValidation.error) {
+      res.status(400).json({ error: paramValidation.error.details[0].message });
+      return;
     }
 
-    const { user_id, old_password, new_password } = req.body;
-    const user = await usersService.getUserById(user_id);
+    const bodyValidation = changePasswordSchema.validate(req.body);
+    if (bodyValidation.error) {
+      res.status(400).json({ error: bodyValidation.error.details[0].message });
+      return;
+    }
+
+    const { userId } = req.params;
+    
+    if (userId !== req.userId) {
+      return res.status(403).json({ message: 'You are not authorized to change password' });
+    }
+
+    const { current_password, new_password } = req.body;
+    const user = await usersService.getUserById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const isValidPassword = await usersService.isValidPassword(old_password, user.password);
+    const isValidPassword = await usersService.isValidPassword(current_password, user.password);
     if(!isValidPassword){
       return res.status(400).json({
         error: "Current password is incorrect",
@@ -78,8 +94,8 @@ const changePassword = async (req, res) => {
     }
 
     const hashedPassword = await hashPassword(new_password);
-    await usersService.changePassword(user_id, hashedPassword);
-    await usersService.invalidateOldSessions(user_id);
+    await usersService.changePassword(userId, hashedPassword);
+    await usersService.invalidateOldSessions(userId);
 
     return res.status(200).json({ message: 'Password changed successfully. Please log in again.' });
   } catch (error) {
@@ -96,7 +112,12 @@ const deleteUser = async (req, res) => {
       res.status(400).json({ error: validation.error.details[0].message });
       return;
     }
+    
     const { userId } = req.params;
+
+    if (userId !== req.userId) {
+      return res.status(403).json({ message: 'You are not authorized to delete this user' });
+    }
 
     await client.query('BEGIN');
 

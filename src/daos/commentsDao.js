@@ -31,12 +31,8 @@ const getCommentsByUserId = async (userId) => {
   }
 };
 
-
-
 const createComment = async (commentData, id) => {
   const { user_id, post_id, body } = commentData;
-
-  console.log('commentData', commentData);
   const query = `
     INSERT INTO comments (id, user_id, post_id, body)
     VALUES ($1, $2, $3, $4)

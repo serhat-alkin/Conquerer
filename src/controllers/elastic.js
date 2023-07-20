@@ -27,7 +27,6 @@ const categoryRates = async (req, res) => {
   }
 };
 
-
 const getUserStats = async (req, res) => {
   try {
     const bloggerUsersResponse = await elasticService.getBloggerUsers(client);

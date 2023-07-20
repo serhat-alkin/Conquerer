@@ -20,7 +20,6 @@ const getBloggerUsers = async (client) => {
   });
 }
 
-
 const getWeekRange = () => {
   const currentDate = new Date();
   const startOfWeek = new Date(currentDate);
@@ -135,7 +134,6 @@ const getYearRange = () => {
   };
 };
 
-
 const processResponseForYear = (response) => {
   const months = response.aggregations.time_buckets.buckets;
   const result = {};
@@ -152,4 +150,14 @@ const processResponseForYear = (response) => {
   return result;
 };
 
-module.exports = { getBloggerUsers, getMonthRange, getUserStats, processResponseForMonth, getWeekRange, processResponse, fetchPosts, getYearRange, processResponseForYear };
+module.exports = {
+  getBloggerUsers, 
+  getMonthRange, 
+  getUserStats, 
+  processResponseForMonth, 
+  getWeekRange, 
+  processResponse, 
+  fetchPosts, 
+  getYearRange, 
+  processResponseForYear 
+};

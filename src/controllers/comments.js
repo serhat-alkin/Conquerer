@@ -10,7 +10,7 @@ const createComment = async (req, res) => {
       res.status(400).json({ error: validation.error.details[0].message });
       return;
     }
-    
+    req.body.user_id = req.userId;
     const comment = await commentsService.createComment(req.body);
 
     res.status(200).json(comment);

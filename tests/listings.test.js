@@ -2,11 +2,23 @@ const listingsController = require('../src/controllers/listings');
 const listingsService = require('../src/services/listingsService');
 
 const httpMocks = require('node-mocks-http'); 
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
 
 jest.mock('../src/services/listingsService');
 
-
 describe("Listings Controller", () => {
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  let token;
+
+  beforeEach(() => {
+    token = jwt.sign({ userId: 'user-123' }, process.env.JWT_SECRET);
+  });
+
   describe("myComments", () => {
     it("should get user's comments", async () => {
 
@@ -16,6 +28,10 @@ describe("Listings Controller", () => {
         params: {
           userId: 'user-123',
         },
+        headers: {
+          'authorization': token,
+        },
+        userId: 'user-123',
       });
 
       const res = httpMocks.createResponse();
@@ -43,6 +59,10 @@ describe("Listings Controller", () => {
           params: {
             userId: 'user-123',
           },
+          headers: {
+            'authorization': token,
+          },
+          userId: 'user-123',
         });
   
         const res = httpMocks.createResponse();
@@ -72,6 +92,10 @@ describe("Listings Controller", () => {
             page: 1,
             limit: 10,
           },
+          headers: {
+            'authorization': token,
+          },
+          userId: 'user-123',
         });
   
         const res = httpMocks.createResponse();
@@ -101,6 +125,10 @@ describe("Listings Controller", () => {
           body: {
             category: 'Money',
           },
+          headers: {
+            'authorization': token,
+          },
+          userId: 'user-123',
         });
   
         const res = httpMocks.createResponse();
