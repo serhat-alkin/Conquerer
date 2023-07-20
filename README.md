@@ -32,7 +32,7 @@ Execute `npm start` to run the application. Server is going to start running at 
 
 Execute `npm test` to run tests. <br />
 
-Here's the updated table with the related parameter variable names added in the `Param Needed` column:
+Here's the table with the related Method, Endpoint, Token and Parameter information:
 
 | Method   | Endpoint                            | Description                           | Token Needed | Param Needed        |
 | -------- | ----------------------------------- | ------------------------------------- | ------------ | ------------------- |
