@@ -16,17 +16,22 @@ const deletePosts = async (userId, client = pool) => {
 };
 
 
-const createBlogPost = async (blogPostData, id) => {
-  const { user_id, title, body, category } = blogPostData;
-  const query = `
-    INSERT INTO posts (id, user_id, title, body, category)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *;
-  `;
-  const values = [id, user_id, title, body, category];
+const createBlogPost = async (blogPostData, id) => { 
+  try {
+    const { user_id, title, body, category } = blogPostData;
+    const query = `
+      INSERT INTO posts (id, user_id, title, body, category)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
+    const values = [id, user_id, title, body, category];
 
-  const { rows } = await pool.query(query, values);
-  return rows[0];
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+} catch (error) {
+  console.error('Error deleting posts:', error);
+  throw error;
+}
 };
 
 
@@ -89,7 +94,6 @@ const getLastPosts = async (offset, limit) => {
     LIMIT $1 OFFSET $2
   `;
   const values = [limit, offset];
-
   const { rows } = await pool.query(query, values);
   return rows;
   } catch (error) {
