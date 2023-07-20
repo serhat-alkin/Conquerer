@@ -11,7 +11,7 @@ You need to have postgresql installed on your local machine and create a local D
 To ensure the security of the API Key and secrets, it is important to follow these steps:
 
 On the root folder of the project, create a new file named .env.
-Copy and paste the following information into the .env file. I sent JWT_SECRET and ELASTIC_SEARCH_API_KEY via email. <br />
+Copy and paste the following information into the .env file. I sent JWT_SECRET and ELASTIC_SEARCH_API_KEY via email. ELASTIC_SEARCH_API_KEY belongs to my temporary user for elastic.co  <br />
 ```
 HOST=localhost
 DB_USER=YOUR_POSTGRES_USER
