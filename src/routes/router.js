@@ -9,7 +9,7 @@ const { categoryRates, getUserStats, getPostsThisWeek, getPostsThisMonth , getPo
 const { validateToken } = require('../middleware/auth');
 
 router.post('/users/register', register);
-router.get('/users/login', login);
+router.post('/users/login', login);
 router.post('/users/:userId/changePassword',validateToken, changePassword);
 router.delete('/users/:userId', validateToken, deleteUser);
 router.post('/posts/create', validateToken, createBlogPost);
