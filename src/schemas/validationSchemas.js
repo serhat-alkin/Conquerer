@@ -41,7 +41,7 @@ const updatePostSchema = Joi.object({
   body: Joi.string().min(1).required(),
 }).or('title', 'content').required();
 
-const updatePostParamSchema = Joi.object({
+const postIdSchema = Joi.object({
   postId: Joi.string().required()
 });
 
@@ -59,7 +59,7 @@ module.exports = {
   userRegistrationSchema,
   createPostSchema,
   updatePostSchema,
-  updatePostParamSchema,
+  postIdSchema,
   createCommentSchema,
   userIdSchema,
   categorySchema,

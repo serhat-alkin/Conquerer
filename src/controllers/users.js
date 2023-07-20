@@ -2,7 +2,7 @@
 const usersService = require('../services/usersService');
 const postsService = require('../services/postsService');
 const commentsService = require('../services/commentsService');
-const { userRegistrationSchema, changePasswordSchema, loginSchema } = require('../schemas/validationSchemas');
+const { userRegistrationSchema, changePasswordSchema, loginSchema, userIdSchema } = require('../schemas/validationSchemas');
 const { generateJWT, hashPassword } = require("../utils/crypto");
 const pool = require('../db/connection');
 
@@ -91,6 +91,11 @@ const changePassword = async (req, res) => {
 const deleteUser = async (req, res) => {
   const client = await pool.connect();
   try {
+    const validation = userIdSchema.validate(req.params);
+    if (validation.error) {
+      res.status(400).json({ error: validation.error.details[0].message });
+      return;
+    }
     const { userId } = req.params;
 
     await client.query('BEGIN');

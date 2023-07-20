@@ -1,6 +1,6 @@
 const postsService = require('../services/postsService');
 const commentsService = require('../services/commentsService');
-const { createPostSchema, updatePostSchema, updatePostParamSchema } = require('../schemas/validationSchemas');
+const { createPostSchema, updatePostSchema, postIdSchema } = require('../schemas/validationSchemas');
 const pool = require('../db/connection');
 
 const createBlogPost = async (req, res) => {
@@ -21,7 +21,7 @@ const createBlogPost = async (req, res) => {
 
 const updateBlogPost = async (req, res) => {
   try {
-    const paramValidation = updatePostParamSchema.validate(req.params);
+    const paramValidation = postIdSchema.validate(req.params);
     if (paramValidation.error) {
       res.status(400).json({ error: paramValidation.error.details[0].message });
       return;
@@ -49,6 +49,11 @@ const updateBlogPost = async (req, res) => {
 const deleteBlogPost = async (req, res) => {
   let client;
   try {
+    const validation = postIdSchema.validate(req.params);
+    if (validation.error) {
+      res.status(400).json({ error: validation.error.details[0].message });
+      return;
+    }
     client = await pool.connect();
 
     await client.query('BEGIN');
